@@ -1,5 +1,5 @@
 from tools.llm_client import get_llm
-from langchain.schema import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 def parse_intent(user_message):
     llm = get_llm()
