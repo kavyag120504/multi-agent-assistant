@@ -12,22 +12,26 @@ DEFAULT_TIMEZONE = os.getenv("USER_TIMEZONE", "Asia/Kolkata")
 
 
 def get_calendar_service():
+    import json
+    import streamlit as st
     creds = None
-    if os.path.exists('token.json'):
+
+    # Cloud: load from Streamlit secrets
+    if "GOOGLE_TOKEN_JSON" in st.secrets:
+        token_data = json.loads(st.secrets["GOOGLE_TOKEN_JSON"])
+        creds = Credentials.from_authorized_user_info(token_data, SCOPES)
+
+    # Local: load from token.json file
+    elif os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+
+    # Refresh if expired
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not os.path.exists('credentials.json'):
-                raise FileNotFoundError(
-                    "credentials.json not found. Download it from Google Cloud Console "
-                    "and place it in the project root."
-                )
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+        raise FileNotFoundError("Google Calendar credentials not found.")
+
     return build('calendar', 'v3', credentials=creds)
 
 
@@ -45,13 +49,14 @@ def handle_calendar(user_message, context: str = ""):
     from langchain_core.messages import HumanMessage, SystemMessage
 
     # ── Validate credentials files exist ────────────────────────────────────
-    if not os.path.exists('credentials.json') and not os.path.exists('token.json'):
+    import streamlit as st
+    has_local = os.path.exists('token.json')
+    has_cloud = "GOOGLE_TOKEN_JSON" in st.secrets
+    if not has_local and not has_cloud:
         return (
             "❌ Google Calendar is not set up.\n"
-            "Please download `credentials.json` from Google Cloud Console "
-            "and place it in the project root folder."
+            "Add GOOGLE_TOKEN_JSON to Streamlit secrets."
         )
-
     try:
         llm = get_llm()
         context_hint = f"\nConversation so far:\n{context}\n" if context else ""
