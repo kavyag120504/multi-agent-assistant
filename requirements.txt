@@ -1,6 +1,12 @@
 langchain
 langchain-groq
+langchain-core
 streamlit
 python-dotenv
 requests
 tavily-python
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+tzdata
+apscheduler==3.10.4

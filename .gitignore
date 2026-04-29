@@ -11,3 +11,17 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Google calendar credentials
+credentials.json
+token.json
+
+# SQLite databases (contain user data)
+*.db
+
+# Logs
+aria.log
+*.log
+
+# Reminders JSON (legacy)
+reminders.json
