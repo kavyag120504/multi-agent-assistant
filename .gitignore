@@ -18,6 +18,9 @@ token.json
 
 # SQLite databases (contain user data)
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 
 # Logs
 aria.log
