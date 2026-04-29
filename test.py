@@ -1,11 +1,15 @@
 from agents.orchestrator_agent import run_assistant
 
-# Test all agents through orchestrator
-print("--- Weather Test ---")
-print(run_assistant("What is the weather in Mumbai?"))
+tests = [
+    "What is the weather in Delhi?",
+    "Tell me latest AI news",
+    "What is 15 multiplied by 8?",
+    "Search for Python tutorials",
+]
 
-print("\n--- Search Test ---")
-print(run_assistant("Search for latest Python programming news"))
-
-print("\n--- General Chat Test ---")
-print(run_assistant("What is artificial intelligence?"))
+for query in tests:
+    print(f"\nQ: {query}")
+    response, intent = run_assistant(query)
+    print(f"Intent: {intent}")
+    print(f"A: {response[:150]}")
+    print("-" * 50)
