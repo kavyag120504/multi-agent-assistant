@@ -77,6 +77,10 @@ html,body{margin:0;padding:0;background:#0a0a0a!important}
     border-color: rgba(220,38,38,0.4) !important;
     background: rgba(220,38,38,0.08) !important;
 }
+.nb-btn > button *, .nb-active > button *, .nb-so > button * {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
