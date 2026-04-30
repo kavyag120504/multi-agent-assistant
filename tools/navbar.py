@@ -99,7 +99,7 @@ html,body{margin:0;padding:0;background:#0a0a0a!important}
     st.markdown('<div id="aria-navbar-row">', unsafe_allow_html=True)
 
     col_brand, col_chat, col_hist, col_about, col_sp, col_user, col_so = st.columns(
-        [1.0, 0.6, 0.75, 0.65, 5.0, 1.3, 0.75]
+        [1.2, 0.8, 0.9, 0.9, 4.0, 1.5, 1.0]
     )
 
     with col_brand:
