@@ -1,44 +1,89 @@
-# Multi-Agent AI Personal Assistant
+# KAVI - Multi-Agent AI Personal Assistant
 
-A modular, multi-agent AI assistant that understands natural language and executes real-world tasks by coordinating specialized agents — built with Python, LangChain, and Groq (free LLM API).
-
----
-
-##  Problem Statement
-
-Modern digital assistants struggle to execute complex, multi-step tasks across different services in a seamless way. Most systems rely on a single centralized model, which limits their ability to specialize, scale, and coordinate efficiently.
-
-This project solves that by building a **multi-agent architecture** where each agent is a specialist, and an orchestrator routes tasks intelligently.
+KAVI (formerly ARIA) is a production-grade multi-agent AI personal assistant built with Python, LangChain, and Groq LLM. It takes natural language input, classifies the intent, and routes the task to the correct specialized agent. Each agent handles a distinct capability and calls the appropriate API or service.
 
 ---
 
-##  Features
+## Overview
 
-- **Orchestrator Agent** — understands user intent and delegates to the right agent
-- **Weather Agent** — fetches real-time weather using OpenWeatherMap API
-- **Search Agent** — performs web searches using Tavily API
-- **Email Agent** — sends emails via SMTP (no OAuth required)
-- **Chat UI** — clean conversational interface built with Streamlit
+Most people manage daily tasks across 5-10 separate apps. KAVI consolidates weather, email, calendar, news, web search, task management, reminders, and code execution into a single conversational interface. You type what you want in plain English and the right agent handles it automatically.
 
 ---
 
-##  Architecture
+## Agents
+
+**Weather Agent**
+Fetches real-time weather and 5-day forecasts using OpenWeatherMap. Understands follow-up questions and timezone context.
+
+**Search Agent**
+Performs web searches via Tavily and returns an AI-generated summary with ranked results and relevance scores.
+
+**Email Agent**
+Connects to Gmail via SMTP and IMAP. Supports sending, reading inbox, searching by keyword or sender, reading the latest email from a specific person, and replying.
+
+**News Agent**
+Fetches latest news on any topic via Tavily with advanced search depth. Returns an AI-generated summary plus articles with publish dates.
+
+**Calendar Agent**
+Manages Google Calendar via OAuth2. Supports creating, viewing, updating, and deleting events. Detects timezones from natural language.
+
+**Reminder Agent**
+Sets time-based reminders stored in SQLite per user. Shows overdue alerts on the chat page and sends Telegram notifications daily.
+
+**Todo Agent**
+Full task management with priority levels (high, normal, low), due dates, and per-user data isolation via SQLite.
+
+**Code Executor**
+Extracts or generates Python code from natural language and runs it in a sandboxed subprocess with a 10-second timeout. Dangerous modules are blocked before execution.
+
+**General Agent**
+Handles open-ended conversation, knowledge questions, and accurate math using an AST-based safe calculator. Uses conversation memory for context.
+
+---
+
+## Architecture
 
 ```
-User Input (Streamlit UI)
-        │
-        ▼
-Orchestrator Agent  ◄── LLM (Groq / Gemini)
-        │
-   ┌────┴─────────────┐
-   ▼         ▼        ▼
-Weather    Search   Email
- Agent     Agent    Agent
-   │         │        │
-   ▼         ▼        ▼
-OpenWeather Tavily   SMTP
-   API       API    Server
+User message
+    -> Intent Parser (Groq LLM classifies intent)
+    -> Orchestrator (routes to correct agent)
+    -> Specialized Agent (calls API or runs logic)
+    -> Response (formatted output with agent badge)
 ```
+
+Conversation context (last 6 messages) is passed to every agent so follow-up questions work naturally across sessions.
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|---|---|
+| Language | Python 3.10+ |
+| LLM | Groq API - LLaMA 3.3 70B Versatile |
+| AI Framework | LangChain, langchain-groq |
+| UI | Streamlit (multi-page) |
+| Database | SQLite (users, sessions, memory, todos, reminders) |
+| Weather | OpenWeatherMap REST API |
+| Search and News | Tavily API |
+| Email | Gmail SMTP + IMAP |
+| Calendar | Google Calendar API v3 (OAuth2) |
+| Notifications | Telegram Bot API + APScheduler |
+| Security | SHA-256 + random salt password hashing, 32-byte session tokens |
+| Environment | python-dotenv |
+
+---
+
+## Features
+
+- Multi-user authentication with secure password hashing and session management
+- Persistent conversation memory per user that survives page refreshes and restarts
+- Per-user data isolation across todos, reminders, and chat history
+- Conversation history page with per-date resume functionality
+- Interactive Python code editor with sandbox execution and output display
+- Daily Telegram notifications at 9am for overdue and due-today tasks
+- Multi-page UI with fixed navbar (Chat, History, About)
+- Dark red theme with glassmorphism styling
 
 ---
 
@@ -46,119 +91,118 @@ OpenWeather Tavily   SMTP
 
 ```
 multi_agent_assistant/
-│
-├── agents/
-│   ├── orchestrator_agent.py   # Routes user query to correct agent
-│   ├── weather_agent.py        # Handles weather queries
-│   ├── search_agent.py         # Handles web search queries
-│   └── email_agent.py          # Handles email sending
-│
-├── tools/
-│   ├── llm_client.py           # Connects to Groq/Gemini LLM
-│   └── intent_parser.py        # Parses user intent from query
-│
-├── ui/
-│   └── app.py                  # Streamlit chat interface
-│
-├── .env                        # API keys (not committed to GitHub)
-├── .gitignore
-├── requirements.txt
-└── README.md
+    agents/
+        orchestrator_agent.py    routes intent to correct agent
+        weather_agent.py         OpenWeatherMap API
+        search_agent.py          Tavily web search
+        email_agent.py           Gmail SMTP + IMAP
+        news_agent.py            Tavily news search
+        general_agent.py         LLM general chat and math
+        calendar_agent.py        Google Calendar API
+        reminder_agent.py        SQLite-based reminders
+        todo_agent.py            SQLite-based task manager
+        code_agent.py            Sandboxed Python executor
+    tools/
+        llm_client.py            Groq LLM singleton
+        intent_parser.py         Classifies user intent
+        memory.py                Per-user conversation memory
+        auth_db.py               User authentication and sessions
+        user_memory_db.py        Persistent conversation history
+        todo_db.py               Todo storage with user isolation
+        telegram_notifier.py     Telegram message sender
+        reminder_scheduler.py    APScheduler daily job
+        navbar.py                Shared navbar component
+        shared_styles.py         Shared CSS utilities
+    pages/
+        1_Chat.py                Main chat interface
+        2_History.py             Conversation history with resume
+        3_About.py               Agent documentation
+    app.py                       Entry point - login and register
+    requirements.txt
+    .env                         API keys (never commit)
+    .gitignore
 ```
 
 ---
 
-## Setup Instructions
+## Setup
 
-### 1. Clone the repository
+**1. Clone the repository**
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/multi-agent-assistant.git
+git clone https://github.com/kavyag120504/multi-agent-assistant
 cd multi-agent-assistant
 ```
 
-### 2. Create a virtual environment
+**2. Create and activate virtual environment**
+
 ```bash
 python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
+venv\Scripts\activate
 ```
 
-### 3. Install dependencies
+**3. Install dependencies**
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set up API keys
+**4. Configure environment variables**
 
-Create a `.env` file in the root folder:
+Create a `.env` file in the project root:
+
 ```
-GROQ_API_KEY=your_groq_api_key
-OPENWEATHER_API_KEY=your_openweather_api_key
-TAVILY_API_KEY=your_tavily_api_key
-EMAIL_ADDRESS=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
+GROQ_API_KEY=your_groq_key
+OPENWEATHER_API_KEY=your_openweather_key
+TAVILY_API_KEY=your_tavily_key
+EMAIL_ADDRESS=your_gmail@gmail.com
+EMAIL_PASSWORD=your_gmail_app_password
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
+REMINDER_HOUR=9
+REMINDER_MINUTE=0
+USER_TIMEZONE=Asia/Kolkata
 ```
 
-> All APIs used have a **free tier** — no credit card required.
+**5. Google Calendar setup**
 
-### 5. Run the app
+Download `credentials.json` from Google Cloud Console (Calendar API enabled) and place it in the project root. The OAuth2 flow will create `token.json` on first use.
+
+**6. Run the application**
+
 ```bash
-streamlit run ui/app.py
+streamlit run app.py
 ```
 
 ---
 
-## API Keys (All Free)
+## Environment Variables
 
-| Service | Purpose | Free Tier |
-|---|---|---|
-| [Groq](https://console.groq.com) | LLM brain | Yes |
-| [OpenWeatherMap](https://openweathermap.org/api) | Weather data | Yes |
-| [Tavily](https://tavily.com) | Web search | Yes |
-| Gmail SMTP | Send emails | Yes |
-
----
-
-## Example Queries
-
-| User Says | Agent Used |
+| Variable | Description |
 |---|---|
-| "What's the weather in Delhi?" | Weather Agent |
-| "Search for latest AI news" | Search Agent |
-| "Send an email to john@example.com saying hello" | Email Agent |
-| "What's the temperature in Mumbai and email it to me?" | Orchestrator → Weather + Email |
+| GROQ_API_KEY | Groq API key for LLaMA inference |
+| OPENWEATHER_API_KEY | OpenWeatherMap API key |
+| TAVILY_API_KEY | Tavily search API key |
+| EMAIL_ADDRESS | Gmail address |
+| EMAIL_PASSWORD | Gmail App Password (not account password) |
+| TELEGRAM_BOT_TOKEN | Telegram bot token from BotFather |
+| TELEGRAM_CHAT_ID | Your Telegram chat ID |
+| REMINDER_HOUR | Hour for daily Telegram notification (default 9) |
+| REMINDER_MINUTE | Minute for daily Telegram notification (default 0) |
+| USER_TIMEZONE | Default timezone (default Asia/Kolkata) |
 
 ---
 
-## Tech Stack
+## Security Notes
 
-- **Python 3.10+**
-- **LangChain** — agent framework
-- **Groq API** — fast, free LLM (Llama 3)
-- **Streamlit** — chat UI
-- **OpenWeatherMap API** — weather data
-- **Tavily API** — web search
-- **SMTP** — email sending
+- Never commit `.env`, `credentials.json`, or `token.json` to version control
+- All three are listed in `.gitignore`
+- SQLite database files (`*.db`) are also excluded as they contain user data
+- Passwords are hashed with SHA-256 and a random 32-byte salt before storage
+- The code executor blocks dangerous imports (os, sys, subprocess, socket, requests, etc.) before running any code
 
 ---
 
-## Future Improvements
+## GitHub
 
-- Add a Calendar Agent (Google Calendar integration)
-- Add memory so the assistant remembers past conversations
-- Deploy to Hugging Face Spaces or Streamlit Cloud
-- Add voice input support
-
----
-
-##  Author
-
-**Your Name**
-- GitHub: [Kavya Goswami](https://github.com/kavya120504)
-- LinkedIn:(https://www.linkedin.com/in/kavya-goswami-39a8442ab/)
-
----
-
-##  License
-
-MIT License — free to use and modify.
+https://github.com/kavyag120504/multi-agent-assistant
