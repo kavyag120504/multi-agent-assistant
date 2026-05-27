@@ -1,3 +1,4 @@
+import json
 from tools.llm_client import get_llm
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -6,61 +7,43 @@ _VALID_INTENTS = {
     "calendar", "reminder", "todo", "code", "general"
 }
 
-
-def parse_intent(user_message: str) -> str:
+def parse_intents(user_message: str) -> list[str]:
     llm = get_llm()
 
     messages = [
         SystemMessage(content="""
-        You are an intent classifier. Given a user message,
-        respond with ONLY one of these words:
-        - weather
-        - search
-        - email
-        - news
-        - calendar
-        - reminder
-        - todo
-        - code
-        - general
+        You are an advanced intent classifier for a multi-agent platform.
+        Analyze the user's message and return a JSON list of required agent intents.
+        Valid intents are: weather, search, email, news, calendar, reminder, todo, code, general.
 
         Examples:
-        "What is the weather in Delhi?"          -> weather
-        "5 day forecast for Mumbai"              -> weather
-        "Search for Python tutorials"            -> search
-        "Send email to john@gmail.com"           -> email
-        "Read my inbox"                          -> email
-        "Reply to John's email"                  -> email
-        "What did John say in his last email?"   -> email
-        "What is the latest news about AI?"      -> news
-        "Schedule a meeting tomorrow at 3pm"     -> calendar
-        "What are my events today?"              -> calendar
-        "Reschedule my 3pm meeting to 5pm"       -> calendar
-        "Remind me to call John at 5pm"          -> reminder
-        "Set a reminder to submit report by 3pm" -> reminder
-        "Show my reminders"                      -> reminder
-        "What reminders did I miss?"             -> reminder
-        "Add task buy groceries"                 -> todo
-        "Add high priority task call client"     -> todo
-        "Show my pending tasks"                  -> todo
-        "Show done tasks"                        -> todo
-        "Complete task 3"                        -> todo
-        "Delete task 5"                          -> todo
-        "What tasks do I have?"                  -> todo
-        "Run: print('hello world')"              -> code
-        "Execute: for i in range(5): print(i)"  -> code
-        "Write a fibonacci function and run it"  -> code
-        "Run this code: x = [1,2,3]; print(sum(x))" -> code
-        "What is 25 times 4?"                    -> general
-        "Calculate sqrt(144)"                    -> general
+        "What is the weather in Delhi?" -> ["weather"]
+        "Should I travel to Mumbai this weekend?" -> ["weather", "calendar", "general"]
+        "Summarize today's AI news and email it to my team." -> ["news", "general", "email"]
+        "Am I free tomorrow and what's the weather there?" -> ["calendar", "weather"]
+        "Calculate sqrt(144)" -> ["general"]
+        "Add task buy groceries" -> ["todo"]
 
-        Respond with just the single word, nothing else.
+        Respond ONLY with a valid JSON array of strings, nothing else. No markdown formatting.
         """),
         HumanMessage(content=user_message)
     ]
 
-    response = llm.invoke(messages)
-    intent   = response.content.strip().lower()
-
-    # Validate — fall back to general if LLM returns something unexpected
-    return intent if intent in _VALID_INTENTS else "general"
+    try:
+        response = llm.invoke(messages)
+        content = response.content.strip()
+        # Clean up possible markdown code blocks if the LLM ignores instructions
+        if content.startswith("```json"):
+            content = content.replace("```json", "", 1)
+        if content.endswith("```"):
+            content = content[:-3]
+            
+        intents = json.loads(content.strip())
+        if not isinstance(intents, list):
+            intents = ["general"]
+            
+        # Filter valid intents
+        valid_found = [i for i in intents if i in _VALID_INTENTS]
+        return valid_found if valid_found else ["general"]
+    except Exception as e:
+        return ["general"]

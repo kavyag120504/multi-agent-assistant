@@ -1,208 +1,93 @@
-# KAVI - Multi-Agent AI Personal Assistant
+# KAVI AI Assistant 🚀
 
-KAVI (formerly ARIA) is a production-grade multi-agent AI personal assistant built with Python, LangChain, and Groq LLM. It takes natural language input, classifies the intent, and routes the task to the correct specialized agent. Each agent handles a distinct capability and calls the appropriate API or service.
+KAVI is a fully autonomous, multi-agent AI assistant designed not just to chat, but to actively orchestrate complex workflows, provide proactive insights, and execute natural language automations. 
 
----
+This repository contains the latest version of KAVI, successfully migrated from a legacy Streamlit application to a highly scalable **Next.js (Frontend)** and **FastAPI (Backend)** architecture, fully optimized for single-repo deployment on Vercel.
 
-## Overview
+## ✨ Features
 
-Most people manage daily tasks across 5-10 separate apps. KAVI consolidates weather, email, calendar, news, web search, task management, reminders, and code execution into a single conversational interface. You type what you want in plain English and the right agent handles it automatically.
+- **Multi-Agent Orchestrator:** Intelligent intent detection routes queries to specialized agents (Weather, Calendar, Email, News, Web Search, Code Executor) and synthesizes their outputs for a cohesive response.
+- **Mission Control (Explain Mode):** See exactly *how* KAVI answered your question with a futuristic UI trace showing which agents ran, execution times, and a confidence score.
+- **Proactive Intelligence:** KAVI analyzes your data (e.g. pending tasks) and intelligently suggests actions directly inside your chat dashboard.
+- **Natural Language Workflows:** Create complex automations using plain English (e.g., "Every Monday at 9AM, send me a summary of AI news").
+- **Stateless JWT Auth:** Secure, fast, and scalable authentication.
 
----
+## 🛠️ Tech Stack
 
-## Agents
+- **Frontend**: Next.js (App Router), React, Tailwind CSS v4, Dark Glassmorphic Design.
+- **Backend**: Python 3, FastAPI, LangChain, Groq LLaMA 3.3.
+- **Database Architecture**: 
+  - **Local Development**: SQLite (zero-config, out of the box).
+  - **Production**: PostgreSQL (required for Vercel's Serverless environment).
 
-**Weather Agent**
-Fetches real-time weather and 5-day forecasts using OpenWeatherMap. Understands follow-up questions and timezone context.
+## 🚀 Setup & Local Execution
 
-**Search Agent**
-Performs web searches via Tavily and returns an AI-generated summary with ranked results and relevance scores.
+You will need two terminal windows to run KAVI locally.
 
-**Email Agent**
-Connects to Gmail via SMTP and IMAP. Supports sending, reading inbox, searching by keyword or sender, reading the latest email from a specific person, and replying.
-
-**News Agent**
-Fetches latest news on any topic via Tavily with advanced search depth. Returns an AI-generated summary plus articles with publish dates.
-
-**Calendar Agent**
-Manages Google Calendar via OAuth2. Supports creating, viewing, updating, and deleting events. Detects timezones from natural language.
-
-**Reminder Agent**
-Sets time-based reminders stored in SQLite per user. Shows overdue alerts on the chat page and sends Telegram notifications daily.
-
-**Todo Agent**
-Full task management with priority levels (high, normal, low), due dates, and per-user data isolation via SQLite.
-
-**Code Executor**
-Extracts or generates Python code from natural language and runs it in a sandboxed subprocess with a 10-second timeout. Dangerous modules are blocked before execution.
-
-**General Agent**
-Handles open-ended conversation, knowledge questions, and accurate math using an AST-based safe calculator. Uses conversation memory for context.
-
----
-
-## Architecture
-
-```
-User message
-    -> Intent Parser (Groq LLM classifies intent)
-    -> Orchestrator (routes to correct agent)
-    -> Specialized Agent (calls API or runs logic)
-    -> Response (formatted output with agent badge)
-```
-
-Conversation context (last 6 messages) is passed to every agent so follow-up questions work naturally across sessions.
-
----
-
-## Tech Stack
-
-| Category | Technology |
-|---|---|
-| Language | Python 3.10+ |
-| LLM | Groq API - LLaMA 3.3 70B Versatile |
-| AI Framework | LangChain, langchain-groq |
-| UI | Streamlit (multi-page) |
-| Database | SQLite (users, sessions, memory, todos, reminders) |
-| Weather | OpenWeatherMap REST API |
-| Search and News | Tavily API |
-| Email | Gmail SMTP + IMAP |
-| Calendar | Google Calendar API v3 (OAuth2) |
-| Notifications | Telegram Bot API + APScheduler |
-| Security | SHA-256 + random salt password hashing, 32-byte session tokens |
-| Environment | python-dotenv |
-
----
-
-## Features
-
-- Multi-user authentication with secure password hashing and session management
-- Persistent conversation memory per user that survives page refreshes and restarts
-- Per-user data isolation across todos, reminders, and chat history
-- Conversation history page with per-date resume functionality
-- Interactive Python code editor with sandbox execution and output display
-- Daily Telegram notifications at 9am for overdue and due-today tasks
-- Multi-page UI with fixed navbar (Chat, History, About)
-- Dark red theme with glassmorphism styling
-
----
-
-## Project Structure
-
-```
-multi_agent_assistant/
-    agents/
-        orchestrator_agent.py    routes intent to correct agent
-        weather_agent.py         OpenWeatherMap API
-        search_agent.py          Tavily web search
-        email_agent.py           Gmail SMTP + IMAP
-        news_agent.py            Tavily news search
-        general_agent.py         LLM general chat and math
-        calendar_agent.py        Google Calendar API
-        reminder_agent.py        SQLite-based reminders
-        todo_agent.py            SQLite-based task manager
-        code_agent.py            Sandboxed Python executor
-    tools/
-        llm_client.py            Groq LLM singleton
-        intent_parser.py         Classifies user intent
-        memory.py                Per-user conversation memory
-        auth_db.py               User authentication and sessions
-        user_memory_db.py        Persistent conversation history
-        todo_db.py               Todo storage with user isolation
-        telegram_notifier.py     Telegram message sender
-        reminder_scheduler.py    APScheduler daily job
-        navbar.py                Shared navbar component
-        shared_styles.py         Shared CSS utilities
-    pages/
-        1_Chat.py                Main chat interface
-        2_History.py             Conversation history with resume
-        3_About.py               Agent documentation
-    app.py                       Entry point - login and register
-    requirements.txt
-    .env                         API keys (never commit)
-    .gitignore
-```
-
----
-
-## Setup
-
-**1. Clone the repository**
-
+### 1. Backend Setup (Terminal 1)
 ```bash
-git clone https://github.com/kavyag120504/multi-agent-assistant
-cd multi-agent-assistant
-```
-
-**2. Create and activate virtual environment**
-
-```bash
+# Create and activate a virtual environment
 python -m venv venv
-venv\Scripts\activate
-```
+# Windows: venv\Scripts\activate
+# Mac/Linux: source venv/bin/activate
 
-**3. Install dependencies**
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Start the FastAPI server on port 8000
+python -m uvicorn api.index:app --reload
 ```
 
-**4. Configure environment variables**
-
-Create a `.env` file in the project root:
-
-```
-GROQ_API_KEY=your_groq_key
-OPENWEATHER_API_KEY=your_openweather_key
-TAVILY_API_KEY=your_tavily_key
-EMAIL_ADDRESS=your_gmail@gmail.com
-EMAIL_PASSWORD=your_gmail_app_password
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-TELEGRAM_CHAT_ID=your_telegram_chat_id
-REMINDER_HOUR=9
-REMINDER_MINUTE=0
-USER_TIMEZONE=Asia/Kolkata
-```
-
-**5. Google Calendar setup**
-
-Download `credentials.json` from Google Cloud Console (Calendar API enabled) and place it in the project root. The OAuth2 flow will create `token.json` on first use.
-
-**6. Run the application**
-
+### 2. Frontend Setup (Terminal 2)
 ```bash
-streamlit run app.py
+# Install node modules
+npm install
+
+# Start the Next.js development server
+npm run dev
+```
+
+Visit `http://localhost:3000` to interact with KAVI. The frontend will automatically proxy API requests to your local FastAPI server.
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the root directory (this file is git-ignored for safety). You can use the provided `.env.example` as a template.
+
+```env
+GROQ_API_KEY=your_groq_api_key
+JWT_SECRET=your_super_secret_jwt_key
+# DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+*Note: Do not commit your real `.env` file or any `token.json` credentials.*
+
+## 🌍 Vercel Deployment
+
+This repository is built as a Vercel-ready monorepo. When you push this to GitHub and import it into Vercel, it automatically builds the Next.js frontend and maps the `api/` folder to Python Serverless Functions.
+
+### Important Deployment Steps:
+1. Push this code to your GitHub repository.
+2. In Vercel, click **Add New Project** and import your repository.
+3. In the deployment settings, configure the following **Environment Variables**:
+   - `GROQ_API_KEY`
+   - `JWT_SECRET`
+   - `DATABASE_URL` (Required! Vercel uses an ephemeral filesystem, meaning local SQLite files reset instantly. Provide a Postgres connection string like Neon or Supabase to persist your data).
+4. Click **Deploy**. Vercel will handle the rest!
+
+## 📁 Project Structure
+
+```text
+├── app/                  # Next.js Frontend Pages
+│   ├── chat/             # Main Chat Interface & Mission Control
+│   ├── workflows/        # NL Automations Interface
+│   └── globals.css       # Global KAVI styling (Tailwind v4)
+├── api/                  # FastAPI Backend Entrypoint
+│   ├── index.py          # Serverless app instance
+│   └── routers/          # API Endpoints (Auth, Chat, Workflows, Insights)
+├── agents/               # LLM Agents (Weather, Email, Orchestrator, etc.)
+├── tools/                # Database wrappers and utilities
+├── requirements.txt      # Python dependencies for Vercel
+└── package.json          # Node dependencies for Next.js
 ```
 
 ---
-
-## Environment Variables
-
-| Variable | Description |
-|---|---|
-| GROQ_API_KEY | Groq API key for LLaMA inference |
-| OPENWEATHER_API_KEY | OpenWeatherMap API key |
-| TAVILY_API_KEY | Tavily search API key |
-| EMAIL_ADDRESS | Gmail address |
-| EMAIL_PASSWORD | Gmail App Password (not account password) |
-| TELEGRAM_BOT_TOKEN | Telegram bot token from BotFather |
-| TELEGRAM_CHAT_ID | Your Telegram chat ID |
-| REMINDER_HOUR | Hour for daily Telegram notification (default 9) |
-| REMINDER_MINUTE | Minute for daily Telegram notification (default 0) |
-| USER_TIMEZONE | Default timezone (default Asia/Kolkata) |
-
----
-
-## Security Notes
-
-- Never commit `.env`, `credentials.json`, or `token.json` to version control
-- All three are listed in `.gitignore`
-- SQLite database files (`*.db`) are also excluded as they contain user data
-- Passwords are hashed with SHA-256 and a random 32-byte salt before storage
-- The code executor blocks dangerous imports (os, sys, subprocess, socket, requests, etc.) before running any code
-
----
-
-## GitHub
-
-https://github.com/kavyag120504/multi-agent-assistant
+*Built as a showcase for advanced Agentic AI interactions.*

@@ -10,3 +10,7 @@ google-auth-httplib2
 google-api-python-client
 tzdata
 apscheduler==3.10.4
+fastapi
+uvicorn
+pyjwt
+psycopg2-binary
