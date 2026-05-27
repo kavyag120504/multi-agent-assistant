@@ -40,8 +40,12 @@ def get_db_connection(db_name="aria.db"):
         finally:
             conn.close()
     else:
-        # Resolve SQLite path
-        db_path = os.path.join(os.path.dirname(__file__), "..", db_name)
+        # Resolve SQLite path. Vercel filesystem is read-only except /tmp
+        if os.getenv("VERCEL") == "1":
+            db_path = os.path.join("/tmp", db_name)
+        else:
+            db_path = os.path.join(os.path.dirname(__file__), "..", db_name)
+            
         conn = sqlite3.connect(db_path, check_same_thread=False)
         conn.row_factory = dict_factory
         # Safe concurrent reads
