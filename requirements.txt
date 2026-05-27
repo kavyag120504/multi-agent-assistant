@@ -1,7 +1,6 @@
 langchain
 langchain-groq
 langchain-core
-streamlit
 python-dotenv
 requests
 tavily-python

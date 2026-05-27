@@ -1,0 +1,16 @@
+venv/
+.venv/
+node_modules/
+__pycache__/
+.cache/
+.next/
+*.sqlite
+*.sqlite3
+*.db
+aria.log
+reminders.json
+token.json
+credentials.json
+google-credentials.json
+models/
+datasets/
