@@ -2,11 +2,11 @@
 
 KAVI is a fully autonomous, multi-agent AI assistant designed not just to chat, but to actively orchestrate complex workflows, provide proactive insights, and execute natural language automations. 
 
-This repository contains the latest version of KAVI, successfully migrated from a legacy Streamlit application to a highly scalable **Next.js (Frontend)** and **FastAPI (Backend)** architecture, fully optimized for single-repo deployment on Vercel.
+This repository contains the latest version of KAVI, successfully migrated from a legacy Streamlit application to a highly scalable **Next.js (Frontend)** and **FastAPI (Backend)** architecture.
 
 ## ✨ Features
 
-- **Multi-Agent Orchestrator:** Intelligent intent detection routes queries to specialized agents (Weather, Calendar, Email, News, Web Search, Code Executor) and synthesizes their outputs for a cohesive response.
+- **Multi-Agent Orchestrator:** Intelligent intent detection routes queries to 11 specialized agents (Weather, Calendar, Email, News, Web Search, Code Executor, etc.) and synthesizes their outputs for a cohesive response.
 - **Mission Control (Explain Mode):** See exactly *how* KAVI answered your question with a futuristic UI trace showing which agents ran, execution times, and a confidence score.
 - **Proactive Intelligence:** KAVI analyzes your data (e.g. pending tasks) and intelligently suggests actions directly inside your chat dashboard.
 - **Natural Language Workflows:** Create complex automations using plain English (e.g., "Every Monday at 9AM, send me a summary of AI news").
@@ -15,10 +15,10 @@ This repository contains the latest version of KAVI, successfully migrated from 
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js (App Router), React, Tailwind CSS v4, Dark Glassmorphic Design.
-- **Backend**: Python 3, FastAPI, LangChain, Groq LLaMA 3.3.
+- **Backend**: Python 3, FastAPI, LangChain, Groq LLaMA 3.
 - **Database Architecture**: 
   - **Local Development**: SQLite (zero-config, out of the box).
-  - **Production**: PostgreSQL (required for Vercel's Serverless environment).
+  - **Production**: PostgreSQL (e.g., Neon or Supabase).
 
 ## 🚀 Setup & Local Execution
 
@@ -35,7 +35,7 @@ python -m venv venv
 pip install -r requirements.txt
 
 # Start the FastAPI server on port 8000
-python -m uvicorn api.index:app --reload
+python -m uvicorn api.index:app --reload --port 8000
 ```
 
 ### 2. Frontend Setup (Terminal 2)
@@ -60,18 +60,20 @@ JWT_SECRET=your_super_secret_jwt_key
 ```
 *Note: Do not commit your real `.env` file or any `token.json` credentials.*
 
-## 🌍 Vercel Deployment
+## 🌍 Production Deployment
 
-This repository is built as a Vercel-ready monorepo. When you push this to GitHub and import it into Vercel, it automatically builds the Next.js frontend and maps the `api/` folder to Python Serverless Functions.
+Because KAVI utilizes a massive, heavy AI engine (LangChain, Google APIs, APScheduler), it exceeds the limits of standard serverless platforms for Python. We employ a **Decoupled Architecture** for production.
 
-### Important Deployment Steps:
-1. Push this code to your GitHub repository.
-2. In Vercel, click **Add New Project** and import your repository.
-3. In the deployment settings, configure the following **Environment Variables**:
-   - `GROQ_API_KEY`
-   - `JWT_SECRET`
-   - `DATABASE_URL` (Required! Vercel uses an ephemeral filesystem, meaning local SQLite files reset instantly. Provide a Postgres connection string like Neon or Supabase to persist your data).
-4. Click **Deploy**. Vercel will handle the rest!
+### Step 1: Deploy Backend to Render (Free)
+1. In Render, create a new **Web Service** from this GitHub repository.
+2. Render will automatically detect the `render.yaml` configuration file included in this repo.
+3. Add your `DATABASE_URL`, `JWT_SECRET`, and `GROQ_API_KEY` to the Render Environment Variables.
+4. Deploy, and copy your live Render URL (e.g., `https://kavi-backend.onrender.com`).
+
+### Step 2: Deploy Frontend to Vercel
+1. In Vercel, import this repository.
+2. Add a new Environment Variable named `BACKEND_URL` and set its value to your live Render URL from Step 1.
+3. Deploy! Next.js will build the UI and seamlessly proxy all API traffic to your powerful Render Python engine.
 
 ## 📁 Project Structure
 
@@ -81,11 +83,12 @@ This repository is built as a Vercel-ready monorepo. When you push this to GitHu
 │   ├── workflows/        # NL Automations Interface
 │   └── globals.css       # Global KAVI styling (Tailwind v4)
 ├── api/                  # FastAPI Backend Entrypoint
-│   ├── index.py          # Serverless app instance
+│   ├── index.py          # App instance
 │   └── routers/          # API Endpoints (Auth, Chat, Workflows, Insights)
-├── agents/               # LLM Agents (Weather, Email, Orchestrator, etc.)
-├── tools/                # Database wrappers and utilities
-├── requirements.txt      # Python dependencies for Vercel
+├── agents/               # 11 LLM Agents (Weather, Email, Code, Orchestrator, etc.)
+├── tools/                # Database wrappers and AI utilities
+├── render.yaml           # Infrastructure-as-code configuration for Render deployment
+├── requirements.txt      # Python dependencies
 └── package.json          # Node dependencies for Next.js
 ```
 
