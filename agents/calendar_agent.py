@@ -13,12 +13,12 @@ DEFAULT_TIMEZONE = os.getenv("USER_TIMEZONE", "Asia/Kolkata")
 
 def get_calendar_service():
     import json
-    import streamlit as st
+    import os
     creds = None
 
-    # Cloud: load from Streamlit secrets
-    if "GOOGLE_TOKEN_JSON" in st.secrets:
-        token_data = json.loads(st.secrets["GOOGLE_TOKEN_JSON"])
+    # Cloud: load from Environment Variables
+    if os.getenv("GOOGLE_TOKEN_JSON"):
+        token_data = json.loads(os.getenv("GOOGLE_TOKEN_JSON"))
         creds = Credentials.from_authorized_user_info(token_data, SCOPES)
 
     # Local: load from token.json file
@@ -49,9 +49,9 @@ def handle_calendar(user_message, context: str = ""):
     from langchain_core.messages import HumanMessage, SystemMessage
 
     # ── Validate credentials files exist ────────────────────────────────────
-    import streamlit as st
+    import os
     has_local = os.path.exists('token.json')
-    has_cloud = "GOOGLE_TOKEN_JSON" in st.secrets
+    has_cloud = bool(os.getenv("GOOGLE_TOKEN_JSON"))
     if not has_local and not has_cloud:
         return (
             "❌ Google Calendar is not set up.\n"
