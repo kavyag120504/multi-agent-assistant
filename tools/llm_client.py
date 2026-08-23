@@ -20,7 +20,7 @@ def get_llm() -> ChatGroq:
             )
         _llm_instance = ChatGroq(
             api_key=api_key,
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-70b-versatile",
             temperature=0.7,
         )
     return _llm_instance
